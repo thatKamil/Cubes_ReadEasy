@@ -1,15 +1,81 @@
 from tkinter import *
 import pydicom
 import datetime
+import tkinter.messagebox
+from tkinter import filedialog
 
-importedLogFile = sys.argv[1]
 
-def CTlog(importedLogFile):
+
+
+# Main windows setup
+mainWindow = Tk()  # Links main window to the interpreter
+mainWindow.title("Cubes_ReadEasy by Kamil_Sokolowski")
+mainWindow.geometry("500x290+300+200")  # Window size and initial position
+mainWindow['bg'] = 'gray98'  # Background colour
+
+# Main text area
+textArea = Text(mainWindow, width=59, height=14, borderwidth=2, bg='old lace')
+textArea.place(x=10, y=50)
+
+# Labels
+Label(mainWindow, text="Open Molecubes dicom \nor reconparams file", bg='gray98', font='Helvetica').place(x=180, y=5)
+
+
+def openLogFileAndProcess():
+    '''Main program that runs with an open GUI'''
+
+    textArea.delete("1.0", "end")
+
+    # Select log file
+    importedFile = filedialog.askopenfilename(initialdir="/",title="Open Log file")
+
+    if importedFile.endswith('.txt'):
+        determineLog(importedFile)
+    elif importedFile.endswith('.dcm'):
+        determineDicom(importedFile)
+    else:
+        textArea.insert(END, 'Not a valid file format')
+
+
+def determineDicom(importedFile):
+    dicom_info = pydicom.dcmread(importedFile)
+
+    if dicom_info.Modality == 'CT':
+        textArea.insert(END, 'CT Dicom file:\n')
+        CTdicom(importedFile)
+    elif dicom_info.Modality == 'PT':
+        textArea.insert(END, 'PET Dicom file:\n')
+        PETdicom(importedFile)
+    else:
+        textArea.insert(END, 'Not a Dicom or reconstruction parameter log file\n')
+
+
+def determineLog(importedFile):
+    parametersDict = {}  # New dictionary holding data from log file.
+
+    # Opens and parses the data from log file
+    with open(importedFile, 'r') as textInput:
+        for line in textInput:
+            for i in line:
+                position = line.find('=')
+                parametersDict[line[:position]] = (line[position + 1:]).strip()
+
+    if 'Acquisition/isotope ' in parametersDict:
+        textArea.insert(END, 'PET reconstruction parameter file:\n')
+        PETlog(importedFile)
+    elif parametersDict.get('Acquisition/modality ') == 'CT':
+        textArea.insert(END, 'CT reconstruction parameter file:\n')
+        CTlog(importedFile)
+    else:
+        textArea.insert(END, 'Not a Dicom or reconstruction parameter log file\n')
+
+
+def CTlog(importedFile):
     parametersDict = {}  # New dictionary holding data from log file.
     studyInfo = []
 
     # Opens and parses the data from log file
-    with open(importedLogFile, 'r') as textInput:
+    with open(importedFile, 'r') as textInput:
         for line in textInput:
             for i in line:
                 position = line.find('=')
@@ -19,30 +85,32 @@ def CTlog(importedLogFile):
     studyInfo.append(parametersDict.get('General/study '))
     studyInfo.append(parametersDict.get('General/series '))
     studyInfo.append(parametersDict.get('General/patient '))
-    print('\nStudy Info: \t\t' + str("/".join(studyInfo)))
+    textArea.insert(END, '\nStudy Info: \t\t\t' + str("/".join(studyInfo)))
 
     if parametersDict.get('Reconstruction/voxelsizeX ') == '0.2':
-        print('Voxel Size: \t\t200um')
+        textArea.insert(END, '\nVoxel Size: \t\t\t200um')
     elif parametersDict.get('Reconstruction/voxelsizeX ') == '0.1':
-        print('Voxel Size: \t\t100um')
+        textArea.insert(END, '\nVoxel Size: \t\t\t100um')
     elif parametersDict.get('Reconstruction/voxelsizeX ') == '0.05':
-        print('Voxel Size: \t\t50um')
+        textArea.insert(END, '\nVoxel Size: \t\t\t50um')
     else:
-        print('INVALID VOXEL SIZE')
+        textArea.insert(END, '\nINVALID VOXEL SIZE')
 
-    print('Voltage: \t\t' + parametersDict.get('Acquisition/kVp ') + 'kV')
-    print('Current: \t\t' + parametersDict.get('Acquisition/muA ') + 'uA')
-    print('Exposure: \t\t' + parametersDict.get('Acquisition/exposure ') + 'ms')
-    print('Modality: \t\t' + parametersDict.get('Acquisition/modality '))
-    print('Protocol: \t\t' + parametersDict.get('General/protocol ').capitalize())
-    print('Noise Reduction: \t' + parametersDict.get('NoiseRegularization/factor '))
-    print("Exposures #'s: \t\t" + parametersDict.get('Acquisition/nr_exposures '))
-    print('Acquisition Type: \t' + (parametersDict.get('Acquisition/scan_type ')).capitalize())
-    print('Recon. Algorithm: \t' + parametersDict.get('Reconstruction/algorithm '))
-    print('Software Ver: \t\t' + parametersDict.get('Acquisition/version '))
+    textArea.insert(END, '\nVoltage: \t\t\t' + parametersDict.get('Acquisition/kVp ') + 'kV')
+    textArea.insert(END, '\nCurrent: \t\t\t' + parametersDict.get('Acquisition/muA ') + 'uA')
+    textArea.insert(END, '\nExposure: \t\t\t' + parametersDict.get('Acquisition/exposure ') + 'ms')
+    textArea.insert(END, '\nModality: \t\t\t' + parametersDict.get('Acquisition/modality '))
+    textArea.insert(END, '\nProtocol: \t\t\t' + parametersDict.get('General/protocol ').capitalize())
+    textArea.insert(END, '\nNoise Reduction: \t\t\t' + parametersDict.get('NoiseRegularization/factor '))
+    textArea.insert(END, "\nExposures #'s: \t\t\t" + parametersDict.get('Acquisition/nr_exposures '))
+    textArea.insert(END, '\nAcquisition Type: \t\t\t' + (parametersDict.get('Acquisition/scan_type ')).capitalize())
+    textArea.insert(END, '\nRecon. Algorithm: \t\t\t' + parametersDict.get('Reconstruction/algorithm '))
+    textArea.insert(END, '\nSoftware Ver: \t\t\t' + parametersDict.get('Acquisition/version '))
 
-def CTdicom(importedLogFile):
-    dicom_info = pydicom.dcmread(importedLogFile)
+
+def CTdicom(importedFile):
+
+    dicom_info = pydicom.dcmread(importedFile)
     # Reads Voxel Size
     voxelSize = ''
     if dicom_info.SliceThickness == 0.2:
@@ -71,23 +139,24 @@ def CTdicom(importedLogFile):
 
     date_time_obj = datetime.datetime.strptime(finalDate, '%Y-%m-%d-%H-%M-%S')
 
-    print('\nDate & Time: \t\t' + '{:%d %B %Y @ %I:%M%p}'.format(date_time_obj))
-    print('Study Info: \t\t' + str(dicom_info.PatientName) + ' / ' + str(dicom_info.PatientID))
-    print('Voxel Size:  \t\t' + voxelSize)
-    print('Voltage: \t\t' + str(dicom_info.SharedFunctionalGroupsSequence[0].CTXRayDetailsSequence[0].KVP) + 'kV')
-    print('Modality: \t\t' + dicom_info.Modality)
-    print('Acq. Type: \t\t' + (
+    textArea.insert(END, '\nDate & Time: \t\t' + '{:%d %B %Y @ %I:%M%p}'.format(date_time_obj))
+    textArea.insert(END, '\nStudy Info: \t\t' + str(dicom_info.PatientName) + '/' + str(dicom_info.PatientID))
+    textArea.insert(END, '\nVoxel Size:  \t\t' + voxelSize)
+    textArea.insert(END, '\nVoltage: \t\t' + str(dicom_info.SharedFunctionalGroupsSequence[0].CTXRayDetailsSequence[0].KVP) + 'kV')
+    textArea.insert(END, '\nModality: \t\t' + dicom_info.Modality)
+    textArea.insert(END, '\nAcq. Type: \t\t' + (
         dicom_info.SharedFunctionalGroupsSequence[0].CTAcquisitionTypeSequence[0].AcquisitionType).capitalize())
-    print('Recon. Algorithm: \t' + (
+    textArea.insert(END, '\nRecon. Alg.: \t\t' + (
         dicom_info.SharedFunctionalGroupsSequence[0].CTReconstructionSequence[0].ReconstructionAlgorithm).capitalize())
-    print('Software Ver: \t\t' + dicom_info.SoftwareVersions)
+    textArea.insert(END, '\nSoftware Ver: \t\t' + dicom_info.SoftwareVersions)
 
-def PETlog(importedLogFile):
+
+def PETlog(importedFile):
     parametersDict = {}  # New dictionary holding data from log file.
     studyInfo = []  # List for combining scan information into one output.
 
     # Opens and parses the data from log file into a searchable dictionary.
-    with open(importedLogFile, 'r') as textInput:
+    with open(importedFile, 'r') as textInput:
         for line in textInput:
             for i in line:
                 position = line.find('=')
@@ -97,23 +166,26 @@ def PETlog(importedLogFile):
     studyInfo.append(parametersDict.get('General/study '))
     studyInfo.append(parametersDict.get('General/series '))
     studyInfo.append(parametersDict.get('General/patient '))
-    print('\nStudy Info: \t\t' + str("/".join(studyInfo)))
+    textArea.insert(END, '\nStudy Info: \t\t\t' + str("/".join(studyInfo)))
 
-    print('Modality: \t\tPET')
-    print('Isotope: \t\t' + parametersDict.get('Acquisition/isotope '))
+    textArea.insert(END, '\nModality: \t\t\tPET')
+    textArea.insert(END, '\nIsotope: \t\t\t' + parametersDict.get('Acquisition/isotope '))
     if (parametersDict.get('Reconstruction/voxel_size ')) == '0.400000':
-        print('Voxel size: \t\t400um')
+        textArea.insert(END, '\nVoxel size: \t\t\t400um')
     elif (parametersDict.get('Reconstruction/voxel_size ')) == '0.800000':
-        print('Voxel size: \t\t800um')
+        textArea.insert(END, '\nVoxel size: \t\t\t800um')
     else:
-        print('INVALID VOXEL SIZE')
-    print('Scan Duration: \t\t' + str(int(int(parametersDict.get('Acquisition/duration ')) / 60)) + 'min')
-    print('Protocol: \t\t' + (parametersDict.get('General/protocol ')).capitalize())
-    print('Noise Reduction: \t' + parametersDict.get('NoiseRegularization/factor '))
-    print('Software Ver: \t\t' + parametersDict.get('Acquisition/version '))
+        print()
+        textArea.insert(END, '\nINVALID VOXEL SIZE')
 
-def PETdicom(importedLogFile):
-    dicom_info = pydicom.dcmread(importedLogFile)
+    textArea.insert(END, '\nScan Duration: \t\t\t' + str(int(int(parametersDict.get('Acquisition/duration ')) / 60)) + 'min')
+    textArea.insert(END, '\nProtocol: \t\t\t' + (parametersDict.get('General/protocol ')).capitalize())
+    textArea.insert(END, '\nNoise Reduction: \t\t\t' + parametersDict.get('NoiseRegularization/factor '))
+    textArea.insert(END, '\nSoftware Ver: \t\t\t' + parametersDict.get('Acquisition/version '))
+
+
+def PETdicom(importedFile):
+    dicom_info = pydicom.dcmread(importedFile)
 
     # Reads Voxel Size
     voxelSize = ''
@@ -140,57 +212,53 @@ def PETdicom(importedLogFile):
 
     date_time_obj = datetime.datetime.strptime(finalDate, '%Y-%m-%d-%H-%M-%S')
 
-    print('\nDate & Time: \t\t' + '{:%d %B %Y @ %I:%M%p}'.format(date_time_obj))
-    print('Study Info: \t\t' + str(dicom_info.PatientName) + ' / ' + str(dicom_info.PatientID))
-    print('Voxel Size:  \t\t' + voxelSize)
-    print('Modality: \t\t' + dicom_info.Modality)
-    print('Software Ver: \t\t' + dicom_info.SoftwareVersions)
-    print('Acq. Duration: \t\t' + str(int((dicom_info.AcquisitionDuration)/60)) + ' minutes')
-    print('Att. Corrected: \t' + (dicom_info.AttenuationCorrected).capitalize())
+    textArea.insert(END, '\nDate & Time: \t\t' + '{:%d %B %Y @ %I:%M%p}'.format(date_time_obj))
+    textArea.insert(END, '\nStudy Info: \t\t' + str(dicom_info.PatientName) + '/' + str(dicom_info.PatientID))
+    textArea.insert(END, '\nVoxel Size:  \t\t' + voxelSize)
+    textArea.insert(END, '\nModality: \t\t' + dicom_info.Modality)
+    textArea.insert(END, '\nAtt. Correct: \t\t' + (dicom_info.AttenuationCorrected).capitalize())
+    textArea.insert(END, '\nAcq. Duration: \t' + str(int((dicom_info.AcquisitionDuration)/60)) + ' minutes')
 
     (dicom_info.RadiopharmaceuticalInformationSequence[0].RadionuclideCodeSequence[0].CodeMeaning).replace('^', '')
-
-    print('Isotope: \t\t' + str(
+    textArea.insert(END,'\nIsotope: \t\t' + str(
         (dicom_info.RadiopharmaceuticalInformationSequence[0].RadionuclideCodeSequence[0].CodeMeaning).replace('^',
-                                                                                                               '')))
 
-def determineDicom(importedLogFile):
-    dicom_info = pydicom.dcmread(importedLogFile)
+                                                                                                              '')))
+    textArea.insert(END, '\nSoftware Ver: \t\t' + dicom_info.SoftwareVersions)
 
-    if dicom_info.Modality == 'CT':
-        print('Reading CT Dicom file:')
-        CTdicom(importedLogFile)
-    elif dicom_info.Modality == 'PT':
-        print('Reading PET Dicom file:')
-        PETdicom(importedLogFile)
-    else:
-        print('Not a Dicom or reconstruction parameter log file')
+def aboutInformation():
+    tkinter.messagebox.showinfo('Information', 'Cubes_ReadEasy\n\nVersion 1.0\n\n20th May 2021\n\n'
+                                               'Cubes_ReadEasy parses useful information from Molecubes dicom '
+                                               'and reconstruction parameter files.\n\nCopyright (c) 2021 Kamil '
+                                               'Sokolowski\n\n'
+                                               'Any suggestion or features you would like added?\nEmail me :'
+                                               'thatKamil@pm.me\n\nSource code & license (MIT) available at:\n'
+                                               'https://github.com/thatKamil/Cubes_ReadEasy'
+                                            "ADD PYDICOM LICENCE INFORMATION")
 
-def determineLog(importedLogFile):
-    parametersDict = {}  # New dictionary holding data from log file.
+def useInformation():
+    tkinter.messagebox.showinfo('Use Guide', "-=Use Guide=-\n\n"
+                                             "The program can open any Molecubes PET or CT dicom file, as well as the "
+                                             "'reconparams' file located in the original reconstruction folder.\n\n"
+                                             "Windows version has the option of:\n\n1. Dragging a file onto the icon"
+                                             "\n\t\tor\n2. Opening the program and clicking the 'Open File' button"
+                                             "\n\nData in the text window can be copied and pasted to a seperate file.")
 
-    # Opens and parses the data from log file
-    with open(importedLogFile, 'r') as textInput:
-        for line in textInput:
-            for i in line:
-                position = line.find('=')
-                parametersDict[line[:position]] = (line[position + 1:]).strip()
+# Main buttons
+Button(mainWindow, text="Open File", command=openLogFileAndProcess, height=2, width=10,
+       bg='snow').place(x=12, y=4)
+Button(mainWindow, text="About", command=aboutInformation, height=1, width=10,
+       bg='snow').place(x=407, y=1)
+Button(mainWindow, text="Use Guide", command=useInformation, height=1, width=10,
+       bg='snow').place(x=407, y=23)
 
-    if 'Acquisition/isotope ' in parametersDict:
-        print('Reading PET reconstruction parameter file:')
-        PETlog(importedLogFile)
-    elif parametersDict.get('Acquisition/modality ') == 'CT':
-        print('Reading CT reconstruction parameter file:')
-        CTlog(importedLogFile)
-    else:
-        print('Not a Dicom or reconstruction parameter log file')
+importedFile = sys.argv[1]
 
-
-if importedLogFile.endswith('.txt'):
-    determineLog(importedLogFile)
-elif importedLogFile.endswith('.dcm'):
-    determineDicom(importedLogFile)
+if importedFile.endswith('.txt'):
+    determineLog(importedFile)
+elif importedFile.endswith('.dcm'):
+    determineDicom(importedFile)
 else:
-    print('Not a valid file format')
+    textArea.insert(END, 'Not a valid file format')
 
-input('\nPress enter key to close program')
+mainWindow.mainloop()

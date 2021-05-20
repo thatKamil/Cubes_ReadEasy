@@ -227,7 +227,7 @@ def aboutInformation():
     tkinter.messagebox.showinfo('Information', 'Cubes_ReadEasy\n\nVersion 1.0\n\n20th May 2021\n\n'
                                                'Cubes_ReadEasy parses useful information from Molecubes dicom '
                                                'and reconstruction parameter files.\n\nCopyright (c) 2021 Kamil '
-                                               'Sokolwoski\n\n'
+                                               'Sokolowski\n\n'
                                                'Any suggestion or features you would like added?\nEmail me :'
                                                'thatKamil@pm.me\n\nSource code & license (MIT) available at:\n'
                                                'https://github.com/thatKamil/Cubes_ReadEasy'
