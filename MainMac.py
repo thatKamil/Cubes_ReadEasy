@@ -8,15 +8,15 @@ from tkinter import filedialog
 # Main windows setup
 mainWindow = Tk()  # Links main window to the interpreter
 mainWindow.title("Cubes_ReadEasy by Kamil_Sokolowski")
-mainWindow.geometry("500x290+300+200")  # Window size and initial position
+mainWindow.geometry("505x285+100+100")  # Window size and initial position
 mainWindow['bg'] = 'gray98'  # Background colour
 
 # Main text area
-textArea = Text(mainWindow, width=59, height=14, borderwidth=2, bg='old lace')
-textArea.place(x=10, y=50)
+textArea = Text(mainWindow, width=59, height=14, borderwidth=2, bg='old lace', font='Menlo')
+textArea.place(x=10, y=55)
 
 # Labels
-Label(mainWindow, text="Open Molecubes dicom \nor reconparams file", bg='gray98', font='Helvetica').place(x=180, y=5)
+Label(mainWindow, text="Open Molecubes dicom \nor reconparams file", bg='gray98', font='Menlo').place(x=170, y=7)
 
 def openLogFileAndProcess():
     '''Main program that runs with an open GUI'''
@@ -230,23 +230,22 @@ def aboutInformation():
                                                'Sokolowski\n\n'
                                                'Any suggestion or features you would like added?\nEmail me :'
                                                'thatKamil@pm.me\n\nSource code & license (MIT) available at:\n'
-                                               'https://github.com/thatKamil/Cubes_ReadEasy'
-                                            "ADD PYDICOM LICENCE INFORMATION")
+                                               'https://github.com/thatKamil/Cubes_ReadEasy')
 
 def useInformation():
     tkinter.messagebox.showinfo('Use Guide', "-=Use Guide=-\n\n"
-                                             "The program can open any Molecubes PET or CT dicom file, as well as the "
+                                             "The program can process any Molecubes PET or CT dicom file, as well as the "
                                              "'reconparams' file located in the original reconstruction folder.\n\n"
-                                             "Windows version has the option of:\n\n1. Dragging a file onto the icon"
-                                             "\n\t\tor\n2. Opening the program and clicking the 'Open File' button"
-                                             "\n\nData in the text window can be copied and pasted to a seperate file.")
+                                             "Start the Cubes_ReadEasy program and click 'Open File'.\n"
+                                             "Select file to be opened."
+                                             "\n\nInfo in the text area can be copied to a seperate file.")
 
 # Main buttons
 Button(mainWindow, text="Open File", command=openLogFileAndProcess, height=2, width=10,
        bg='snow').place(x=12, y=4)
 Button(mainWindow, text="About", command=aboutInformation, height=1, width=10,
-       bg='snow').place(x=407, y=1)
+       bg='snow').place(x=387, y=0)
 Button(mainWindow, text="Use Guide", command=useInformation, height=1, width=10,
-       bg='snow').place(x=407, y=23)
+       bg='snow').place(x=387, y=26)
 
 mainWindow.mainloop()
