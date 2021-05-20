@@ -1,11 +1,13 @@
 import pydicom
 import datetime
 from tkinter import *
+import tkinter.messagebox
 from tkinter import filedialog
+
 
 # Main windows setup
 mainWindow = Tk()  # Links main window to the interpreter
-mainWindow.title("Molecubes_ReadEasy by Kamil_Sokolowski")
+mainWindow.title("Cubes_ReadEasy by Kamil_Sokolowski")
 mainWindow.geometry("500x290+300+200")  # Window size and initial position
 mainWindow['bg'] = 'gray98'  # Background colour
 
@@ -14,7 +16,7 @@ textArea = Text(mainWindow, width=59, height=14, borderwidth=2, bg='old lace')
 textArea.place(x=10, y=50)
 
 # Labels
-Label(mainWindow, text="Ready to read easy?", bg='gray98', font='Helvetica').place(x=170, y=10)
+Label(mainWindow, text="Open Molecubes dicom \nor reconparams file", bg='gray98', font='Helvetica').place(x=180, y=5)
 
 def openLogFileAndProcess():
     '''Main program that runs with an open GUI'''
@@ -36,10 +38,10 @@ def determineDicom(importedFile):
     dicom_info = pydicom.dcmread(importedFile)
 
     if dicom_info.Modality == 'CT':
-        textArea.insert(END, 'Reading CT Dicom file:\n')
+        textArea.insert(END, 'CT Dicom file:\n')
         CTdicom(importedFile)
     elif dicom_info.Modality == 'PT':
-        textArea.insert(END, 'Reading PET Dicom file:\n')
+        textArea.insert(END, 'PET Dicom file:\n')
         PETdicom(importedFile)
     else:
         textArea.insert(END, 'Not a Dicom or reconstruction parameter log file\n')
@@ -56,10 +58,10 @@ def determineLog(importedFile):
                 parametersDict[line[:position]] = (line[position + 1:]).strip()
 
     if 'Acquisition/isotope ' in parametersDict:
-        textArea.insert(END, 'Reading PET reconstruction parameter file:\n')
+        textArea.insert(END, 'PET reconstruction parameter file:\n')
         PETlog(importedFile)
     elif parametersDict.get('Acquisition/modality ') == 'CT':
-        textArea.insert(END, 'Reading CT reconstruction parameter file:\n')
+        textArea.insert(END, 'CT reconstruction parameter file:\n')
         CTlog(importedFile)
     else:
         textArea.insert(END, 'Not a Dicom or reconstruction parameter log file\n')
@@ -212,7 +214,7 @@ def PETdicom(importedFile):
     textArea.insert(END, '\nVoxel Size:  \t\t' + voxelSize)
     textArea.insert(END, '\nModality: \t\t' + dicom_info.Modality)
     textArea.insert(END, '\nAtt. Correct: \t\t' + (dicom_info.AttenuationCorrected).capitalize())
-    textArea.insert(END, '\nAcq. : \t\t' + str(int((dicom_info.AcquisitionDuration)/60)) + ' minutes')
+    textArea.insert(END, '\nAcq. Duration: \t' + str(int((dicom_info.AcquisitionDuration)/60)) + ' minutes')
 
     (dicom_info.RadiopharmaceuticalInformationSequence[0].RadionuclideCodeSequence[0].CodeMeaning).replace('^', '')
     textArea.insert(END,'\nIsotope: \t\t' + str(
@@ -221,8 +223,30 @@ def PETdicom(importedFile):
                                                                                                               '')))
     textArea.insert(END, '\nSoftware Ver: \t\t' + dicom_info.SoftwareVersions)
 
+def aboutInformation():
+    tkinter.messagebox.showinfo('Information', 'Cubes_ReadEasy\n\nVersion 1.0\n\n20th May 2021\n\n'
+                                               'Cubes_ReadEasy parses useful information from Molecubes dicom '
+                                               'and reconstruction parameter files.\n\nCopyright (c) 2021 Kamil '
+                                               'Sokolwoski\n\n'
+                                               'Any suggestion or features you would like added?\nEmail me :'
+                                               'thatKamil@pm.me\n\nSource code & license (MIT) available at:\n'
+                                               'https://github.com/thatKamil/Cubes_ReadEasy'
+                                            "ADD PYDICOM LICENCE INFORMATION")
+
+def useInformation():
+    tkinter.messagebox.showinfo('Use Guide', "-=Use Guide=-\n\n"
+                                             "The program can open any Molecubes PET or CT dicom file, as well as the "
+                                             "'reconparams' file located in the original reconstruction folder.\n\n"
+                                             "Windows version has the option of:\n\n1. Dragging a file onto the icon"
+                                             "\n\t\tor\n2. Opening the program and clicking the 'Open File' button"
+                                             "\n\nData in the text window can be copied and pasted to a seperate file.")
+
 # Main buttons
-Button(mainWindow, text="Open Dicom", command=openLogFileAndProcess, height=1, width=10,
-       bg='snow').place(x=2, y=2)
+Button(mainWindow, text="Open File", command=openLogFileAndProcess, height=2, width=10,
+       bg='snow').place(x=12, y=4)
+Button(mainWindow, text="About", command=aboutInformation, height=1, width=10,
+       bg='snow').place(x=407, y=1)
+Button(mainWindow, text="Use Guide", command=useInformation, height=1, width=10,
+       bg='snow').place(x=407, y=23)
 
 mainWindow.mainloop()
