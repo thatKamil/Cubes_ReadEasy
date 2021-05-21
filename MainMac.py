@@ -15,8 +15,12 @@ mainWindow['bg'] = 'gray98'  # Background colour
 textArea = Text(mainWindow, width=59, height=14, borderwidth=2, bg='old lace', font='Menlo')
 textArea.place(x=10, y=55)
 
+textArea.insert(END, '\n\n\n\t\t   +------+         +------+  \n\t\t  /|     /|        /|     /|\n\t\t'
+                         ' +-+----+ |       +-+----+ |\n\t\t | |    | |       | |    | |\n\t\t | +----+-+       '
+                         '| +----+-+\n\t\t |/     |/        |/     |/\n\t\t +------+         +------+  ')
+
 # Labels
-Label(mainWindow, text="Open Molecubes dicom \nor reconparams file", bg='gray98', font='Menlo').place(x=170, y=7)
+Label(mainWindow, text="Open Molecubes dicom \nor reconparams file", bg='gray98', font='Menlo').place(x=180, y=7)
 
 def openLogFileAndProcess():
     '''Main program that runs with an open GUI'''
@@ -24,7 +28,7 @@ def openLogFileAndProcess():
     textArea.delete("1.0", "end")
 
     # Select log file
-    importedFile = filedialog.askopenfilename(initialdir="/",title="Open Log file")
+    importedFile = filedialog.askopenfilename(initialdir="~/Desktop",title="Open Log file")
 
     if importedFile.endswith('.txt'):
         determineLog(importedFile)
@@ -241,11 +245,11 @@ def useInformation():
                                              "\n\nInfo in the text area can be copied to a seperate file.")
 
 # Main buttons
-Button(mainWindow, text="Open File", command=openLogFileAndProcess, height=2, width=10,
-       bg='snow').place(x=12, y=4)
+Button(mainWindow, text="Open File", command=openLogFileAndProcess, height=2, width=12,
+       bg='snow', font='menlo').place(x=12, y=4)
 Button(mainWindow, text="About", command=aboutInformation, height=1, width=10,
-       bg='snow').place(x=387, y=0)
+       bg='snow', font='menlo').place(x=387, y=0)
 Button(mainWindow, text="Use Guide", command=useInformation, height=1, width=10,
-       bg='snow').place(x=387, y=26)
+       bg='snow', font='menlo').place(x=387, y=26)
 
 mainWindow.mainloop()
