@@ -3,22 +3,20 @@ import pydicom
 import datetime
 import tkinter.messagebox
 from tkinter import filedialog
-
-
-
+from tkinter.font import Font
 
 # Main windows setup
 mainWindow = Tk()  # Links main window to the interpreter
 mainWindow.title("Cubes_ReadEasy by Kamil_Sokolowski")
-mainWindow.geometry("500x290+300+200")  # Window size and initial position
+mainWindow.geometry("497x302+300+200")  # Window size and initial position
 mainWindow['bg'] = 'gray98'  # Background colour
 
 # Main text area
 textArea = Text(mainWindow, width=59, height=14, borderwidth=2, bg='old lace')
-textArea.place(x=10, y=50)
+textArea.place(x=10, y=62)
 
 # Labels
-Label(mainWindow, text="Open Molecubes dicom \nor reconparams file", bg='gray98', font='Helvetica').place(x=180, y=5)
+Label(mainWindow, text="Open Molecubes dicom \nor reconparams file", bg='gray98', font='Courier').place(x=170, y=10)
 
 
 def openLogFileAndProcess():
@@ -27,7 +25,7 @@ def openLogFileAndProcess():
     textArea.delete("1.0", "end")
 
     # Select log file
-    importedFile = filedialog.askopenfilename(initialdir="/",title="Open Log file")
+    importedFile = filedialog.askopenfilename(initialdir="C:/Users/MainFrame/Desktop/", title="Open file")
 
     if importedFile.endswith('.txt'):
         determineLog(importedFile)
@@ -246,19 +244,24 @@ def useInformation():
 
 # Main buttons
 Button(mainWindow, text="Open File", command=openLogFileAndProcess, height=2, width=10,
-       bg='snow').place(x=12, y=4)
-Button(mainWindow, text="About", command=aboutInformation, height=1, width=10,
-       bg='snow').place(x=407, y=1)
-Button(mainWindow, text="Use Guide", command=useInformation, height=1, width=10,
-       bg='snow').place(x=407, y=23)
+       bg='snow', font='Courier').place(x=12, y=9)
+Button(mainWindow, text="About", command=aboutInformation, height=1, width=6,
+       bg='snow', font='Courier').place(x=417, y=1)
+Button(mainWindow, text="Guide", command=useInformation, height=1, width=6,
+       bg='snow', font='Courier').place(x=417, y=27)
 
-importedFile = sys.argv[1]
-
-if importedFile.endswith('.txt'):
-    determineLog(importedFile)
-elif importedFile.endswith('.dcm'):
-    determineDicom(importedFile)
+if len(sys.argv) == 1:  #
+    waitFlag = True
+    textArea.insert(END, '\n\n\n\t\t    +------+         +------+  \n\t\t   /|     /|        /|     /|\n\t\t'
+                         '  +-+----+ |       +-+----+ |\n\t\t  | |    | |       | |    | |\n\t\t  | +----+-+       '
+                         '| +----+-+\n\t\t  |/     |/        |/     |/\n\t\t  +------+         +------+  ')
 else:
-    textArea.insert(END, 'Not a valid file format')
+    importedFile = sys.argv[1]  # The second argument will be the path of the log file.
+    if importedFile.endswith('.txt'):
+        determineLog(importedFile)
+    elif importedFile.endswith('.dcm'):
+        determineDicom(importedFile)
+    else:
+        textArea.insert(END, 'Not a valid file format')
 
 mainWindow.mainloop()
