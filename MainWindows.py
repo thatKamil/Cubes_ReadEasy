@@ -3,7 +3,7 @@ import pydicom
 import datetime
 import tkinter.messagebox
 from tkinter import filedialog
-from tkinter.font import Font
+
 
 # Main windows setup
 mainWindow = Tk()  # Links main window to the interpreter
@@ -231,8 +231,7 @@ def aboutInformation():
                                                'Sokolowski\n\n'
                                                'Any suggestion or features you would like added?\nEmail me :'
                                                'thatKamil@pm.me\n\nSource code & license (MIT) available at:\n'
-                                               'https://github.com/thatKamil/Cubes_ReadEasy'
-                                            "ADD PYDICOM LICENCE INFORMATION")
+                                               'https://github.com/thatKamil/Cubes_ReadEasy')
 
 def useInformation():
     tkinter.messagebox.showinfo('Use Guide', "-=Use Guide=-\n\n"
@@ -254,7 +253,7 @@ if len(sys.argv) == 1:  #
     waitFlag = True
     textArea.insert(END, '\n\n\n\t\t    +------+         +------+  \n\t\t   /|     /|        /|     /|\n\t\t'
                          '  +-+----+ |       +-+----+ |\n\t\t  | |    | |       | |    | |\n\t\t  | +----+-+       '
-                         '| +----+-+\n\t\t  |/     |/        |/     |/\n\t\t  +------+         +------+  ')
+                         '| +----+-+\n\t\t  |/     |/        |/     |/\n\t\t  +------+         +------+  \n')
 else:
     importedFile = sys.argv[1]  # The second argument will be the path of the log file.
     if importedFile.endswith('.txt'):
