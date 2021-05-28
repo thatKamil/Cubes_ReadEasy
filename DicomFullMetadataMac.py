@@ -1,5 +1,5 @@
-import pydicom
 import os
+import pydicom
 from tkinter import *
 from tkinter import filedialog
 
