@@ -15,11 +15,11 @@ mainWindow['bg'] = 'gray98'  # Background colour
 textArea = Text(mainWindow, width=59, height=14, borderwidth=2, bg='old lace', font='Menlo')
 textArea.place(x=10, y=55)
 
+# Displays ASCII art in the text window
 textArea.insert(END, '\n\n\n\t\t   +------+         +------+  \n\t\t  /|     /|        /|     /|\n\t\t'
                          ' +-+----+ |       +-+----+ |\n\t\t | |    | |       | |    | |\n\t\t | +----+-+       '
                          '| +----+-+\n\t\t |/     |/        |/     |/\n\t\t +------+         +------+  ')
 
-# Labels
 Label(mainWindow, text="Open Molecubes dicom \nor reconparams file", bg='gray98', font='Menlo').place(x=180, y=7)
 
 def openLogFileAndProcess():
@@ -30,6 +30,7 @@ def openLogFileAndProcess():
     # Select log file
     importedFile = filedialog.askopenfilename(initialdir="~/Desktop",title="Open Log file")
 
+    # Determines filetype and passes it onto appropriate function.
     if importedFile.endswith('.txt'):
         determineLog(importedFile)
     elif importedFile.endswith('.dcm'):
@@ -39,8 +40,11 @@ def openLogFileAndProcess():
 
 
 def determineDicom(importedFile):
+    """ Determines whether the Dicom file is PET, CT or invalid"""
+
     dicom_info = pydicom.dcmread(importedFile)
 
+    # Different file types passes to one of two functions.
     if dicom_info.Modality == 'CT':
         textArea.insert(END, 'CT Dicom file:\n')
         CTdicom(importedFile)
@@ -52,6 +56,8 @@ def determineDicom(importedFile):
 
 
 def determineLog(importedFile):
+    """Determines whether the Log file is PET, CT or invalid"""
+
     parametersDict = {}  # New dictionary holding data from log file.
 
     # Opens and parses the data from log file
@@ -61,6 +67,7 @@ def determineLog(importedFile):
                 position = line.find('=')
                 parametersDict[line[:position]] = (line[position + 1:]).strip()
 
+    # Different file types passed to one of two functions.
     if 'Acquisition/isotope ' in parametersDict:
         textArea.insert(END, 'PET reconstruction parameter file:\n')
         PETlog(importedFile)
@@ -72,8 +79,10 @@ def determineLog(importedFile):
 
 
 def CTlog(importedFile):
+    """Processes CT Log file and outputs data in text window. """
+
     parametersDict = {}  # New dictionary holding data from log file.
-    studyInfo = []
+    studyInfo = []  # List for creation of file name.
 
     # Opens and parses the data from log file
     with open(importedFile, 'r') as textInput:
@@ -82,12 +91,14 @@ def CTlog(importedFile):
                 position = line.find('=')
                 parametersDict[line[:position]] = (line[position + 1:]).strip()
 
+    # Parses information from log file to generate a filename.
     studyInfo.append(parametersDict.get('General/principalinvestigator '))
     studyInfo.append(parametersDict.get('General/study '))
     studyInfo.append(parametersDict.get('General/series '))
     studyInfo.append(parametersDict.get('General/patient '))
     textArea.insert(END, '\nStudy Info: \t\t\t' + str("/".join(studyInfo)))
 
+    # Outputs voxel size in human readable format.
     if parametersDict.get('Reconstruction/voxelsizeX ') == '0.2':
         textArea.insert(END, '\nVoxel Size: \t\t\t200um')
     elif parametersDict.get('Reconstruction/voxelsizeX ') == '0.1':
@@ -97,6 +108,7 @@ def CTlog(importedFile):
     else:
         textArea.insert(END, '\nINVALID VOXEL SIZE')
 
+    # Parses important information from log file and outputs in text window.
     textArea.insert(END, '\nVoltage: \t\t\t' + parametersDict.get('Acquisition/kVp ') + 'kV')
     textArea.insert(END, '\nCurrent: \t\t\t' + parametersDict.get('Acquisition/muA ') + 'uA')
     textArea.insert(END, '\nExposure: \t\t\t' + parametersDict.get('Acquisition/exposure ') + 'ms')
@@ -110,10 +122,11 @@ def CTlog(importedFile):
 
 
 def CTdicom(importedFile):
+    """Processes CT dicom file and outputs data in text window. """
 
     dicom_info = pydicom.dcmread(importedFile)
-    # Reads Voxel Size
-    voxelSize = ''
+
+    # Outputs voxel size in human readable format.
     if dicom_info.SliceThickness == 0.2:
         voxelSize = '200um'
     elif dicom_info.SliceThickness == 0.1:
@@ -125,9 +138,8 @@ def CTdicom(importedFile):
 
 
     # Parse concatenated dicom date/time information and output in human readable format
-    dateTimeInfo = dicom_info.AcquisitionDateTime
-
     newDate = ['']
+    dateTimeInfo = dicom_info.AcquisitionDateTime
     newDate.append(dateTimeInfo[0:4])
     newDate.append(dateTimeInfo[4:6])
     newDate.append(dateTimeInfo[6:8])
@@ -135,11 +147,10 @@ def CTdicom(importedFile):
     newDate.append(dateTimeInfo[10:12])
     newDate.append(dateTimeInfo[12:14])
     newDate.remove('')
-
     finalDate = "-".join(newDate)
-
     date_time_obj = datetime.datetime.strptime(finalDate, '%Y-%m-%d-%H-%M-%S')
 
+    # Parses important information from log file and outputs in text window.
     textArea.insert(END, '\nDate & Time: \t\t' + '{:%d %B %Y @ %I:%M%p}'.format(date_time_obj))
     textArea.insert(END, '\nStudy Info: \t\t' + str(dicom_info.PatientName) + '/' + str(dicom_info.PatientID))
     textArea.insert(END, '\nVoxel Size:  \t\t' + voxelSize)
@@ -153,6 +164,8 @@ def CTdicom(importedFile):
 
 
 def PETlog(importedFile):
+    """Processes PET log file and outputs data in text window. """
+
     parametersDict = {}  # New dictionary holding data from log file.
     studyInfo = []  # List for combining scan information into one output.
 
@@ -163,12 +176,14 @@ def PETlog(importedFile):
                 position = line.find('=')
                 parametersDict[line[:position]] = (line[position + 1:]).strip()
 
+    # Parses information from log file to generate a filename.
     studyInfo.append(parametersDict.get('General/principalinvestigator '))
     studyInfo.append(parametersDict.get('General/study '))
     studyInfo.append(parametersDict.get('General/series '))
     studyInfo.append(parametersDict.get('General/patient '))
     textArea.insert(END, '\nStudy Info: \t\t\t' + str("/".join(studyInfo)))
 
+    # Outputs voxel size in human readable format.
     textArea.insert(END, '\nModality: \t\t\tPET')
     textArea.insert(END, '\nIsotope: \t\t\t' + parametersDict.get('Acquisition/isotope '))
     if (parametersDict.get('Reconstruction/voxel_size ')) == '0.400000':
@@ -179,6 +194,7 @@ def PETlog(importedFile):
         print()
         textArea.insert(END, '\nINVALID VOXEL SIZE')
 
+    # Parses important information from log file and outputs in text window.
     textArea.insert(END, '\nScan Duration: \t\t\t' + str(int(int(parametersDict.get('Acquisition/duration ')) / 60)) + 'min')
     textArea.insert(END, '\nProtocol: \t\t\t' + (parametersDict.get('General/protocol ')).capitalize())
     textArea.insert(END, '\nNoise Reduction: \t\t\t' + parametersDict.get('NoiseRegularization/factor '))
@@ -186,6 +202,8 @@ def PETlog(importedFile):
 
 
 def PETdicom(importedFile):
+    """Processes PET dicom file and outputs data in text window. """
+
     dicom_info = pydicom.dcmread(importedFile)
 
     # Reads Voxel Size
@@ -198,9 +216,8 @@ def PETdicom(importedFile):
         voxelSize = 'Voxel size not valid'
 
     # Parse concatenated dicom date/time information and output in human readable format
-    dateTimeInfo = dicom_info.AcquisitionDateTime
-
     newDate = ['']
+    dateTimeInfo = dicom_info.AcquisitionDateTime
     newDate.append(dateTimeInfo[0:4])
     newDate.append(dateTimeInfo[4:6])
     newDate.append(dateTimeInfo[6:8])
@@ -208,26 +225,25 @@ def PETdicom(importedFile):
     newDate.append(dateTimeInfo[10:12])
     newDate.append(dateTimeInfo[12:14])
     newDate.remove('')
-
     finalDate = "-".join(newDate)
-
     date_time_obj = datetime.datetime.strptime(finalDate, '%Y-%m-%d-%H-%M-%S')
 
+    # Parses important information from log file and outputs in text window.
     textArea.insert(END, '\nDate & Time: \t\t' + '{:%d %B %Y @ %I:%M%p}'.format(date_time_obj))
     textArea.insert(END, '\nStudy Info: \t\t' + str(dicom_info.PatientName) + '/' + str(dicom_info.PatientID))
     textArea.insert(END, '\nVoxel Size:  \t\t' + voxelSize)
     textArea.insert(END, '\nModality: \t\t' + dicom_info.Modality)
     textArea.insert(END, '\nAtt. Correct: \t\t' + (dicom_info.AttenuationCorrected).capitalize())
     textArea.insert(END, '\nAcq. Duration: \t' + str(int((dicom_info.AcquisitionDuration)/60)) + ' minutes')
-
     (dicom_info.RadiopharmaceuticalInformationSequence[0].RadionuclideCodeSequence[0].CodeMeaning).replace('^', '')
     textArea.insert(END,'\nIsotope: \t\t' + str(
         (dicom_info.RadiopharmaceuticalInformationSequence[0].RadionuclideCodeSequence[0].CodeMeaning).replace('^',
-
                                                                                                               '')))
     textArea.insert(END, '\nSoftware Ver: \t\t' + dicom_info.SoftwareVersions)
 
 def aboutInformation():
+    """Displays information about the program in a pop up box"""
+
     tkinter.messagebox.showinfo('Information', 'Cubes_ReadEasy\n\nVersion 1.0\n\n20th May 2021\n\n'
                                                'Cubes_ReadEasy parses useful information from Molecubes dicom '
                                                'and reconstruction parameter files.\n\nCopyright (c) 2021 Kamil '
@@ -237,6 +253,8 @@ def aboutInformation():
                                                'https://github.com/thatKamil/Cubes_ReadEasy')
 
 def useInformation():
+    """Display information on how to use the program in a pop-up box"""
+
     tkinter.messagebox.showinfo('Use Guide', "-=Use Guide=-\n\n"
                                              "The program can process any Molecubes PET or CT dicom file, as well as the "
                                              "'reconparams' file located in the original reconstruction folder.\n\n"
@@ -244,7 +262,7 @@ def useInformation():
                                              "Select file to be opened."
                                              "\n\nInfo in the text area can be copied to a seperate file.")
 
-# Main buttons
+# GUI buttons
 Button(mainWindow, text="Open File", command=openLogFileAndProcess, height=2, width=12,
        bg='snow', font='menlo').place(x=12, y=4)
 Button(mainWindow, text="About", command=aboutInformation, height=1, width=10,
