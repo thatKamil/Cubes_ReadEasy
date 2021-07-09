@@ -2,7 +2,7 @@
 
 Cubes_ReadyEasy is a tool that parses scanning parameters from Molecubes b-cube and x-cube DICOM and reconstruction parameter files.
 
-<img src="https://user-images.githubusercontent.com/70458221/124846864-0899dd80-dfdd-11eb-9666-2ef7a90b29fc.gif" width="700"/>
+<img src="https://user-images.githubusercontent.com/70458221/125004278-8cff6580-e09c-11eb-97ce-32ab9d34dfa7.gif" width="700"/>
 
 To use the program:
 
